@@ -1,48 +1,74 @@
 # Eren's initial work file
 # can create new files when necessary
 
-from matplotlib import pyplot as plot, image as img
-from PIL import Image
+from matplotlib import pyplot as plot
+from PIL import Image, ImageOps
 import numpy as np
 import cv2
 
 
-def IsGrayScale():
-    if(len(image.shape) < 3): return True
-    if(image.shape[2] == 1): return True
+def IsTransparent(sourceImage):
+    if(sourceImage.mode == "RGBA" or "transparency" in sourceImage.info): return True
+    else: return False
 
-    sourceImage = Image.fromarray(image, "RGB")
+
+def IsGrayScale(sourceImage):
+    if(len(np.asarray(sourceImage).shape) < 3): return True
+    if(np.asarray(sourceImage).shape[2] == 1): return True
+
     width, height = sourceImage.size
     for i in range(width):
         for j in range(height):
-            r, g, b = sourceImage.getpixel((i, j))
+            if(IsTransparent(sourceImage)):
+                r, g, b, a = sourceImage.getpixel((i, j))
+            else:
+                r, g, b = sourceImage.getpixel((i, j))
             if r != g != b:
                 return False
     return True
 
 
 def ConvertToGrayScale():
-    if (IsGrayScale()):
+    if(IsGrayScale(image)):
         print("ConvertToGrayScale: The source image is already grayscale! Please be sure to give a proper colorful image.")
         return image
     else:
         print("ConvertToGrayScale: The source image is converted to grayscale successfully.")
-        return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+        if (IsTransparent(image)):
+            return Image.fromarray(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGBA2GRAY))
+        return Image.fromarray(cv2.cvtColor(np.asarray(image), cv2.COLOR_RGB2GRAY))
+
+
+def InvertImage():
+    if(IsTransparent(image)):
+        sourceImage = image.convert("RGB")
+        print("InvertImage: The transparent source image is inverted successfully.")
+        return ImageOps.invert(sourceImage).convert("RGBA")
+    else:
+        print("InvertImage: The source image is inverted successfully.")
+        return ImageOps.invert(image)
 
 
 def ShowImage(sourceImage):
-    if(IsGrayScale()):
-        print("ShowImage: (1 channel) Grayscale image received. Showing image.")
-        plot.imshow(cv2.cvtColor(sourceImage, cv2.COLOR_GRAY2RGB))
+    if(IsGrayScale(sourceImage)):
+        print("ShowImage: Grayscale image received. Showing image.")
+        plot.imshow(sourceImage, cmap='gray', vmin=0, vmax=255)
+        plot.show()
+    elif(IsTransparent(sourceImage)):
+        print("ShowImage: (RGBA) Transparent image received. Showing image.")
+        plot.imshow(sourceImage)
         plot.show()
     else:
-        print("ShowImage: (3 channel) RGB image received. Showing image.")
+        print("ShowImage: (RGB) Colorful image received. Showing image.")
         plot.imshow(sourceImage)
         plot.show()
 
 
-image = img.imread("Sharbat Gula, the Afghan Girl.jpg")
+image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
 ShowImage(image)
 
+
 image = ConvertToGrayScale()
+ShowImage(image)
+image = InvertImage()
 ShowImage(image)
