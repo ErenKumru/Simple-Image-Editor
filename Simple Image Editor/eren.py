@@ -49,6 +49,11 @@ def InvertImage():
         return ImageOps.invert(image)
 
 
+def MirrorImage():
+    print("MirrorImage: The source image is mirrored successfully.")
+    return ImageOps.mirror(image)
+
+
 def ShowImage(sourceImage):
     if(IsGrayScale(sourceImage)):
         print("ShowImage: Grayscale image received. Showing image.")
@@ -71,4 +76,6 @@ ShowImage(image)
 image = ConvertToGrayScale()
 ShowImage(image)
 image = InvertImage()
+ShowImage(image)
+image = MirrorImage()
 ShowImage(image)
