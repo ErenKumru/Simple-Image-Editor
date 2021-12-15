@@ -114,7 +114,7 @@ def ShowImage(sourceImage):
         plot.show()
 
 
-image = Image.open("horse.png")
+image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
 ShowImage(image)
 """
 L: Single channel image (grayscale)
