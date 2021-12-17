@@ -115,6 +115,7 @@ def AddNoise(mode="gaussian", var=0.01, amount=0.05):
 # factor > 1 -> brightened image
 def AdjustBrightness(factor=1 or 1.0):
     if(factor < 0 or 0.0):
+        print("AdjustBrightness: Negative \"factor\" value is invalid! Brightness is not modified.")
         return image
 
     enhancer = ImageEnhance.Brightness(image)
@@ -127,12 +128,35 @@ def AdjustBrightness(factor=1 or 1.0):
 # factor > 1 -> saturated image
 def AdjustSaturation(factor=1 or 1.0):
     if(factor < 0 or 0.0):
+        print("AdjustSaturation: Negative \"factor\" value is invalid! Saturation is not modified.")
         return image
 
     enhancer = ImageEnhance.Color(image)
     print("AdjustSaturation: The saturation of the source image is adjusted by a factor of {} successfully.".format(factor))
     return enhancer.enhance(factor)
 
+
+# (left, top) = top left coordinates i.e (x,y)
+# (right, bottom) = bottom right coordinates i.e. (x,y)
+# Area to be cropped:
+#       left <= x < right and top <= y < bottom
+def CropImage(left, top, right, bottom):
+    if(left >= right or top >= bottom):
+        print("CropImage: Invalid positions! Can not crop image from left = {} top = {} to right = {} bottom = {}."
+              "\n\t\t   Should satisfy \"right > left and bottom > top\"".format(left, top, right, bottom))
+        return image
+
+    if(left < 0):
+        left = 0
+    if(top < 0):
+        top = 0
+    if(right > image.size[0]):
+        right = image.size[0]
+    if(bottom > image.size[1]):
+        bottom = image.size[1]
+
+    print("CropImage: The source image is cropped from left = {} top = {} to right = {} bottom = {} successfully.".format(left, top, right, bottom))
+    return image.crop((left, top, right, bottom))
 
 
 def ShowImage(sourceImage):
@@ -150,7 +174,7 @@ def ShowImage(sourceImage):
         plot.show()
 
 
-image = Image.open("horse.png")
+image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
 ShowImage(image)
 """
 L: Single channel image (grayscale)
@@ -174,4 +198,6 @@ ShowImage(image)
 image = AdjustBrightness(factor=1.5)
 ShowImage(image)
 image = AdjustSaturation(factor=1.5)
+ShowImage(image)
+image = CropImage(left=300, top=300, right=1600, bottom=1200)
 ShowImage(image)
