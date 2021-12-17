@@ -2,7 +2,7 @@
 # can create new files when necessary
 
 from matplotlib import pyplot as plot
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance
 from skimage.util import random_noise
 import numpy as np
 import cv2
@@ -99,6 +99,15 @@ def AddNoise(mode="gaussian", var=0.01, amount=0.05):
     return Image.fromarray(noiseImage)#.convert(image.mode) can be used to preserve number of channels
 
 
+# factor=1 -> original image
+# factor<1 -> darkened image
+# factor>1 -> brightened image
+def AdjustBrightness(factor=1 or 1.0):
+    enhancer = ImageEnhance.Brightness(image)
+    print("AdjustBrightness: The brightness of the source image is adjusted by a factor of {} successfully.".format(factor))
+    return enhancer.enhance(factor)
+
+
 def ShowImage(sourceImage):
     if(IsGrayScale(sourceImage)):
         print("ShowImage: ({} channel) Grayscale image received. Showing image.".format(NumberOfChannels(sourceImage)))
@@ -134,4 +143,6 @@ ShowImage(image)
 image = MirrorImage()
 ShowImage(image)
 image = AddNoise(var=0.2)
+ShowImage(image)
+image = AdjustBrightness(factor=1.5)
 ShowImage(image)
