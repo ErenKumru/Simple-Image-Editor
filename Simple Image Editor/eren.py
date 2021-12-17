@@ -9,8 +9,9 @@ import cv2
 
 
 def IsTransparent(sourceImage):
-    if(sourceImage.mode == "RGBA" or "transparency" in sourceImage.info): return True
-    else: return False
+    if(sourceImage.mode == "RGBA" or "transparency" in sourceImage.info):
+        return True
+    return False
 
 
 def NumberOfChannels(sourceImage):
@@ -20,8 +21,10 @@ def NumberOfChannels(sourceImage):
 
 
 def IsGrayScale(sourceImage):
-    if(len(np.asarray(sourceImage).shape) < 3): return True
-    if(NumberOfChannels(sourceImage) == 1): return True
+    if(len(np.asarray(sourceImage).shape) < 3):
+        return True
+    if(NumberOfChannels(sourceImage) == 1):
+        return True
 
     width, height = sourceImage.size
     for i in range(width):
@@ -39,9 +42,9 @@ def ConvertToGrayScale():
     if(IsGrayScale(image)):
         print("ConvertToGrayScale: The source image is already grayscale! Please be sure to give a proper colorful image.")
         return image
-    else:
-        print("ConvertToGrayScale: The source image is converted to grayscale successfully.")
-        return image.convert("L")#.convert(image.mode) can be used to preserve number of channels
+
+    print("ConvertToGrayScale: The source image is converted to grayscale successfully.")
+    return image.convert("L")
 
 
 def InvertImage():
@@ -49,9 +52,9 @@ def InvertImage():
         sourceImage = image.convert("RGB")
         print("InvertImage: The transparent source image is inverted successfully.")
         return ImageOps.invert(sourceImage).convert("RGBA")
-    else:
-        print("InvertImage: The source image is inverted successfully.")
-        return ImageOps.invert(image)
+
+    print("InvertImage: The source image is inverted successfully.")
+    return ImageOps.invert(image)
 
 
 def MirrorImage():
@@ -70,6 +73,14 @@ def AddNoise(mode="gaussian", var=0.01, amount=0.05):
         "s&p" Replaces random pixels with either 1 or low_val, where low_val is 0 for unsigned images or -1 for signed images.
         "speckle" Multiplicative noise using out = image + n*image, where n is Gaussian noise with specified mean & variance.
     """
+
+    if(var < 0 or 0.0):
+        print("AddNoise: Negative \"var\" value is invalid! No noise added.")
+        return image
+
+    if(amount < 0 or 0.0):
+        print("AddNoise: Negative \"amount\" value is invalid! No noise added.")
+        return image
 
     sourceImage = image
 
@@ -96,16 +107,32 @@ def AddNoise(mode="gaussian", var=0.01, amount=0.05):
 
     print("AddNoise: The", mode, "noise is added to the source image successfully.")
     noiseImage = (255 * noiseImage).astype(np.uint8)
-    return Image.fromarray(noiseImage)#.convert(image.mode) can be used to preserve number of channels
+    return Image.fromarray(noiseImage)
 
 
-# factor=1 -> original image
-# factor<1 -> darkened image
-# factor>1 -> brightened image
+# factor = 1 -> original image
+# 0 < factor < 1 -> darkened image
+# factor > 1 -> brightened image
 def AdjustBrightness(factor=1 or 1.0):
+    if(factor < 0 or 0.0):
+        return image
+
     enhancer = ImageEnhance.Brightness(image)
     print("AdjustBrightness: The brightness of the source image is adjusted by a factor of {} successfully.".format(factor))
     return enhancer.enhance(factor)
+
+
+# factor = 1 -> original image
+# 0 < factor < 1-> muted or calmed image
+# factor > 1 -> saturated image
+def AdjustSaturation(factor=1 or 1.0):
+    if(factor < 0 or 0.0):
+        return image
+
+    enhancer = ImageEnhance.Color(image)
+    print("AdjustSaturation: The saturation of the source image is adjusted by a factor of {} successfully.".format(factor))
+    return enhancer.enhance(factor)
+
 
 
 def ShowImage(sourceImage):
@@ -123,7 +150,7 @@ def ShowImage(sourceImage):
         plot.show()
 
 
-image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
+image = Image.open("horse.png")
 ShowImage(image)
 """
 L: Single channel image (grayscale)
@@ -145,4 +172,6 @@ ShowImage(image)
 image = AddNoise(var=0.2)
 ShowImage(image)
 image = AdjustBrightness(factor=1.5)
+ShowImage(image)
+image = AdjustSaturation(factor=1.5)
 ShowImage(image)
