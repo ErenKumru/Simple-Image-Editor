@@ -5,7 +5,6 @@ from matplotlib import pyplot as plot
 from PIL import Image, ImageOps, ImageEnhance
 from skimage.util import random_noise
 import numpy as np
-import cv2
 
 
 def IsTransparent(sourceImage):
@@ -174,30 +173,31 @@ def ShowImage(sourceImage):
         plot.show()
 
 
-image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
-ShowImage(image)
 """
 L: Single channel image (grayscale)
 RGB: 3 channel image (colored)
 LA: grayscale with alpha channel
 RGBA: colored with alpha channel
 
-We can have grayscale image in all modes having "L" or "R=G=B"
-Question 1: Should we preserve number of channels for conversions? i.e. RGB->L still 3 channel
 Question 2: Should we apply Black&White or colored noises to colored images?
 """
+image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
+ShowImage(image)
 
-image = ConvertToGrayScale()
+if(IsGrayScale(image)):
+    image = image.convert("L")
+
+image = AdjustSaturation(factor=1.5)
 ShowImage(image)
 image = InvertImage()
+ShowImage(image)
+image = ConvertToGrayScale()
 ShowImage(image)
 image = MirrorImage()
 ShowImage(image)
 image = AddNoise(var=0.2)
 ShowImage(image)
 image = AdjustBrightness(factor=1.5)
-ShowImage(image)
-image = AdjustSaturation(factor=1.5)
 ShowImage(image)
 image = CropImage(left=300, top=300, right=1600, bottom=1200)
 ShowImage(image)
