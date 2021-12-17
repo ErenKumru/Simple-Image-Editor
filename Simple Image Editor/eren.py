@@ -181,6 +181,7 @@ RGBA: colored with alpha channel
 
 Question 2: Should we apply Black&White or colored noises to colored images?
 """
+# Image should be read dynamically from the UI.
 image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
 ShowImage(image)
 
