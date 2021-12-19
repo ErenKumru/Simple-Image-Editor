@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'simpleImageEditor.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.1
-#
-# WARNING! All changes made in this file will be lost!
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 import PyQt5
 from PyQt5.QtWidgets import * 
@@ -41,61 +32,44 @@ class SimpleImageEditor(QMainWindow):
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
 
-        self.label = QExampleLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(0, 0, 550, 620))
-        self.label.move(50, 74)
-        self.label.setText("Source Image")
-        self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.label.setObjectName("label")
-        self.label.setFont(QFont('Arial', 20))
-        self.label.setStyleSheet("background-color: rgb(64, 64, 64);")
+        self.sourceImageLabel = CroppedImageLabel(self.centralwidget)
+        self.sourceImageLabel.setGeometry(QtCore.QRect(0, 0, 550, 620))
+        self.sourceImageLabel.move(50, 74)
+        self.sourceImageLabel.setObjectName("sourceImageLabel")
+        self.sourceImageLabel.setStyleSheet("background-color: rgb(64, 64, 64);")
         self.sourcePixmap = None
 
-        self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(0, 0, 550, 620))
-        self.label_2.setText("Target Image")
-        self.label_2.move(766, 74)
-        self.label_2.setAlignment(QtCore.Qt.AlignCenter)
-       
-        self.label.setFont(QFont('Arial', 20))
-        self.label_2.setObjectName("label_2")
-        self.targetPixmap = None
-        self.label_2.setStyleSheet("background-color: rgb(64, 64, 64);")
+        self.targetImageLabel = QtWidgets.QLabel(self.centralwidget)
+        self.targetImageLabel.setGeometry(QtCore.QRect(0, 0, 550, 620))
+        self.targetImageLabel.move(766, 74)
+        self.targetImageLabel.setObjectName("targetImageLabel")
+        self.targetImagePixmap = None
+        self.targetImageLabel.setStyleSheet("background-color: rgb(64, 64, 64);")
         self.setCentralWidget(self.centralwidget)
 
-        self.button1 = QtWidgets.QPushButton(self.centralwidget)
-        self.button1.setToolTip("Change Color Balance")
-        self.button1.setGeometry(QtCore.QRect(0, 0, 100, 20))
+        self.blurImageButton = QtWidgets.QPushButton(self.centralwidget)
+        self.blurImageButton.setToolTip("Change Color Balance")
+        self.blurImageButton.setGeometry(QtCore.QRect(610, 74, 150, 20))
 
         self.statusbar = QtWidgets.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
 
-     
         #crop part
-        self.actionCrop = QtWidgets.QAction(self)
-        self.actionCrop.setObjectName("actionCrop")
-        self.actionCrop.triggered.connect(self.bastim)
 
+        # self.actionCrop.triggered.connect(self.bastim)
 
- 
-        self.retranslateUi(self)
         QtCore.QMetaObject.connectSlotsByName(self)
-    def bastim(self):
-        return print('bastim')
 
-    
-    def browse_files(self):
+
+    def browseFiles(self):
         print(os.getcwd())
         fname = QFileDialog.getOpenFileName(self, "Open file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
-        self.sourcePixmap = QPixmap(fname[0])
-        self.sourcePixmap = self.sourcePixmap.scaled(331*2, 291*2, QtCore.Qt.KeepAspectRatio)
-        self.label.setPixmap(self.sourcePixmap)
+        self.sourceImagePixmap =  QPixmap(fname[0])
+        self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+        self.label.setPixmap(self.sourcePisourceImagePixmapxmap)
 
-
-
-
-    def check_source_image(self):
+    def checkSourceImage(self):
         if isinstance(self.source_image, type(None)):
             self.show_popup('There is no source image')
 
@@ -110,10 +84,9 @@ class SimpleImageEditor(QMainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
         
-class QExampleLabel (QtWidgets.QLabel):
+class CroppedImageLabel (QtWidgets.QLabel):
     def __init__(self, parentQWidget = None):
-        super(QExampleLabel, self).__init__(parentQWidget)
-    
+        super(CroppedImageLabel, self).__init__(parentQWidget)
         self.initUI()
 
     def initUI (self):
@@ -135,10 +108,8 @@ class QExampleLabel (QtWidgets.QLabel):
         print('burdayim:', currentQRect)
 
 if __name__ == "__main__":
-    
 
     app = QApplication(sys.argv)
     MainWindow = SimpleImageEditor()
-
     MainWindow.show()
     sys.exit(app.exec_())
