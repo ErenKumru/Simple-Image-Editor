@@ -172,7 +172,7 @@ def saveImage(image, path):
     """
     cv2.imwrite(path, image)
 
-image_path = "/home/tugcekizilepe/Desktop/BBM415/Project/Simple-Image-Editor2/Sharbat-Gula,-the-Afghan-Girl.jpg"
+image_path = "Sharbat-Gula,-the-Afghan-Girl.jpg"
 image = Image.open(image_path)
 flip(image).save('flipImageAroundX.jpg')
 gaussianBlurImage(image).save('gaussianBlurImage.jpg')
