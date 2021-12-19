@@ -61,7 +61,7 @@ def MirrorImage():
     return ImageOps.mirror(image)
 
 
-def AddNoise(mode="gaussian", var=0.01, amount=0.05):
+def AddNoise(mode="gaussian", var=0.0025, amount=0.05):
     """
     https://scikit-image.org/docs/stable/api/skimage.util.html#random-noise
     One of the following strings, selecting the type of noise to add:
@@ -112,7 +112,7 @@ def AddNoise(mode="gaussian", var=0.01, amount=0.05):
 # factor = 1 -> original image
 # 0 < factor < 1 -> darkened image
 # factor > 1 -> brightened image
-def AdjustBrightness(factor=1 or 1.0):
+def AdjustBrightness(factor=1.5):
     if(factor < 0 or 0.0):
         print("AdjustBrightness: Negative \"factor\" value is invalid! Brightness is not modified.")
         return image
@@ -125,7 +125,7 @@ def AdjustBrightness(factor=1 or 1.0):
 # factor = 1 -> original image
 # 0 < factor < 1-> muted or calmed image
 # factor > 1 -> saturated image
-def AdjustSaturation(factor=1 or 1.0):
+def AdjustSaturation(factor=1.75):
     if(factor < 0 or 0.0):
         print("AdjustSaturation: Negative \"factor\" value is invalid! Saturation is not modified.")
         return image
@@ -178,8 +178,6 @@ L: Single channel image (grayscale)
 RGB: 3 channel image (colored)
 LA: grayscale with alpha channel
 RGBA: colored with alpha channel
-
-Question 2: Should we apply Black&White or colored noises to colored images?
 """
 # Image should be read dynamically from the UI.
 image = Image.open("Sharbat Gula, the Afghan Girl.jpg")
@@ -188,7 +186,7 @@ ShowImage(image)
 if(IsGrayScale(image)):
     image = image.convert("L")
 
-image = AdjustSaturation(factor=1.5)
+image = AdjustSaturation()
 ShowImage(image)
 image = InvertImage()
 ShowImage(image)
@@ -196,9 +194,9 @@ image = ConvertToGrayScale()
 ShowImage(image)
 image = MirrorImage()
 ShowImage(image)
-image = AddNoise(var=0.2)
+image = AddNoise()
 ShowImage(image)
-image = AdjustBrightness(factor=1.5)
+image = AdjustBrightness()
 ShowImage(image)
 image = CropImage(left=300, top=300, right=1600, bottom=1200)
 ShowImage(image)
