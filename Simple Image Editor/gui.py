@@ -2,193 +2,493 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QPushButton
 import os
 import sys
-from filters import *
+import filters
+from PIL import ImageQt
+
 
 class SimpleImageEditor(QMainWindow):
     def __init__(self):
+
         super().__init__()
 
-        self.source_image = None
-        self.target_image = None
+        self.sourceImage = None # There is no source image initially
+        self.targetImage = None # There is no target image initially
+        self.lastImage = None # There is no last image initially
+        
         self.setGeometry(0, 0, 1366, 768) #xpos, ypos, width, height
-        self.setWindowTitle('Simple Image Editor')
-        self.setStyleSheet("background-color: rgb(210, 210, 210);")
-        self.setStyleSheet("")
-
-        self.centerOnScreen()
+        self.centerWindow()
+        self.setWindowTitle('Simple Image Editor') # Name the title of window
+        self.setStyleSheet("background-color: rgb(210, 210, 210);") # Change the background color of the
         self.setupUi()
+      
 
-    def centerOnScreen (self):
+    def centerWindow (self):
+        """
+        This method centers the window on the screen.
+        """
         resolution = QtWidgets.QDesktopWidget().screenGeometry()
-        print(resolution.width())
-        print(self.frameSize().height())
         self.move((resolution.width() // 2) - (self.frameSize().width() // 2),
                 (resolution.height() // 2) - (self.frameSize().height() // 2))
 
     def setupUi(self):
-
-
         
-        self.setObjectName("MainWindow")
+        self.centralWidget = QtWidgets.QWidget(self)
+        self.centralWidget.setObjectName("centralWidget")
 
-        self.centralwidget = QtWidgets.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-
-        self.sourceImageLabel = CroppedImageLabel(self.centralwidget)
+        # Setup source image label
+        self.sourceImageLabel = QtWidgets.QLabel(self.centralWidget)
         self.sourceImageLabel.setGeometry(QtCore.QRect(0, 0, 550, 620))
         self.sourceImageLabel.move(50, 74)
         self.sourceImageLabel.setObjectName("sourceImageLabel")
         self.sourceImageLabel.setStyleSheet("background-color: rgb(64, 64, 64);")
         self.sourcePixmap = None
+        self.sourceImageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.targetImageLabel = QtWidgets.QLabel(self.centralwidget)
+        # Setup source target label
+        self.targetImageLabel = CroppedImageLabel(self.centralWidget)
         self.targetImageLabel.setGeometry(QtCore.QRect(0, 0, 550, 620))
         self.targetImageLabel.move(766, 74)
         self.targetImageLabel.setObjectName("targetImageLabel")
         self.targetImagePixmap = None
         self.targetImageLabel.setStyleSheet("background-color: rgb(64, 64, 64);")
-        self.setCentralWidget(self.centralwidget)
+        self.setCentralWidget(self.centralWidget)
+        self.targetImageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.blurImageButton = QtWidgets.QPushButton(self.centralwidget)
-        self.blurImageButton.setToolTip("Open Image")
-        self.blurImageButton.setGeometry(QtCore.QRect(246, 34, 158, 30))
-        self.blurImageButton.setText("Open Image")
-        self.blurImageButton.clicked.connect(self.browseFiles)
+        # Setup open image button
+        self.openImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.openImageButton.setToolTip("Open Image")
+        self.openImageButton.setGeometry(QtCore.QRect(246, 34, 158, 30))
+        self.openImageButton.setText("Open Image")
+        self.openImageButton.clicked.connect(self.openFile)
 
-        self.blurImageButton = QtWidgets.QPushButton(self.centralwidget)
-        self.blurImageButton.setToolTip("Save Image")
-        self.blurImageButton.setGeometry(QtCore.QRect(962, 34, 158, 30))
-        self.blurImageButton.setText("Save Image")
+        # Setup save image button
+        self.saveImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.saveImageButton.setToolTip("Save Image")
+        self.saveImageButton.setGeometry(QtCore.QRect(962, 34, 158, 30))
+        self.saveImageButton.setText("Save Image")
+        self.saveImageButton.clicked.connect(self.saveImage)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Blur")
-        self.openImage.setGeometry(QtCore.QRect(605, 74, 158, 30))
-        self.openImage.setText("Blur")
+        # Setup blur image button        
+        self.blurImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.blurImageButton.setToolTip("Blur")
+        self.blurImageButton.setGeometry(QtCore.QRect(605, 74, 158, 30))
+        self.blurImageButton.setText("Blur")
+        self.blurImageButton.clicked.connect(self.blur)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Deblur")
-        self.openImage.setGeometry(QtCore.QRect(605, 119, 158, 30))
-        self.openImage.setText("Deblur")
+        # Setup deblur image button
+        self.deblurImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.deblurImageButton.setToolTip("Deblur")
+        self.deblurImageButton.setGeometry(QtCore.QRect(605, 119, 158, 30))
+        self.deblurImageButton.setText("Deblur")
+        self.deblurImageButton.clicked.connect(self.deblur)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Grayscale")
-        self.openImage.setGeometry(QtCore.QRect(605, 164, 158, 30))
-        self.openImage.setText("Grayscale")
+        # Setup grayscale image button        
+        self.grayscaleImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.grayscaleImageButton.setToolTip("Grayscale")
+        self.grayscaleImageButton.setGeometry(QtCore.QRect(605, 164, 158, 30))
+        self.grayscaleImageButton.setText("Grayscale")
+        self.grayscaleImageButton.clicked.connect(self.grayscale)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Crop")
-        self.openImage.setGeometry(QtCore.QRect(605, 209, 158, 30))
-        self.openImage.setText("Crop")
+        # Setup crop image button
+        self.cropImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.cropImageButton.setToolTip("Crop")
+        self.cropImageButton.setGeometry(QtCore.QRect(605, 209, 158, 30))
+        self.cropImageButton.setText("Crop")
+        self.cropImageButton.clicked.connect(self.crop)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Flip")
-        self.openImage.setGeometry(QtCore.QRect(605, 254, 158, 30))
-        self.openImage.setText("Flip")
+        # Setup flip image button
+        self.flipImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.flipImageButton.setToolTip("Flip")
+        self.flipImageButton.setGeometry(QtCore.QRect(605, 254, 158, 30))
+        self.flipImageButton.setText("Flip")
+        self.flipImageButton.clicked.connect(self.flip)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Mirror")
-        self.openImage.setGeometry(QtCore.QRect(605, 299, 158, 30))
-        self.openImage.setText("Mirror")
+        # Setup mirror image button
+        self.mirrorImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.mirrorImageButton.setToolTip("Mirror")
+        self.mirrorImageButton.setGeometry(QtCore.QRect(605, 299, 158, 30))
+        self.mirrorImageButton.setText("Mirror")
+        self.mirrorImageButton.clicked.connect(self.mirror)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Rotate")
-        self.openImage.setGeometry(QtCore.QRect(605, 344, 158, 30))
-        self.openImage.setText("Rotate")
-
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Reverse the Color")
-        self.openImage.setGeometry(QtCore.QRect(605, 389, 158, 30))
-        self.openImage.setText("Reverse the Color")
-
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Change Color Balance")
-        self.openImage.setGeometry(QtCore.QRect(605, 434, 158, 30))
-        self.openImage.setText("Change Color Balance")
-
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Adjust Brightness")
-        self.openImage.setGeometry(QtCore.QRect(605, 479, 158, 30))
-        self.openImage.setText("Adjust Brightness")
-
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Adjust Contrast")
-        self.openImage.setGeometry(QtCore.QRect(605, 524, 158, 30))
-        self.openImage.setText("Adjust Contrast")
-
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Adjust Saturation")
-        self.openImage.setGeometry(QtCore.QRect(605, 569, 158, 30))
-        self.openImage.setText("Adjust Saturation")
+        # Setup rotate image button
+        self.rotateImageButton = QtWidgets.QPushButton(self.centralWidget)
+        self.rotateImageButton.setToolTip("Rotate")
+        self.rotateImageButton.setGeometry(QtCore.QRect(605, 344, 158, 30))
+        self.rotateImageButton.setText("Rotate")
+        self.rotateImageButton.clicked.connect(self.rotate)
         
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Add Noise")
-        self.openImage.setGeometry(QtCore.QRect(605, 614, 158, 30))
-        self.openImage.setText("Add Noise")
+        # Setup reverse color button
+        self.reverseColorButton = QtWidgets.QPushButton(self.centralWidget)
+        self.reverseColorButton.setToolTip("Reverse the Color")
+        self.reverseColorButton.setGeometry(QtCore.QRect(605, 389, 158, 30))
+        self.reverseColorButton.setText("Reverse the Color")
+        self.reverseColorButton.clicked.connect(self.reverseColor)
 
-        self.openImage = QtWidgets.QPushButton(self.centralwidget)
-        self.openImage.setToolTip("Detect Edges")
-        self.openImage.setGeometry(QtCore.QRect(605, 659, 158, 30))
-        self.openImage.setText("Detect Edges")
+        # Setup change color balance button        
+        self.changeColorBalanceButton = QtWidgets.QPushButton(self.centralWidget)
+        self.changeColorBalanceButton.setToolTip("Change Color Balance")
+        self.changeColorBalanceButton.setGeometry(QtCore.QRect(605, 434, 158, 30))
+        self.changeColorBalanceButton.setText("Change Color Balance")
+        self.changeColorBalanceButton.clicked.connect(self.changeColorBalance)
+
+        # Setup adjust brightness button        
+        self.adjustBrightnessButton = QtWidgets.QPushButton(self.centralWidget)
+        self.adjustBrightnessButton.setToolTip("Adjust Brightness")
+        self.adjustBrightnessButton.setGeometry(QtCore.QRect(605, 479, 158, 30))
+        self.adjustBrightnessButton.setText("Adjust Brightness")
+        self.adjustBrightnessButton.clicked.connect(self.adjustBrightness)
+
+        # Setup adjust contrast button 
+        self.adjustContrastButton = QtWidgets.QPushButton(self.centralWidget)
+        self.adjustContrastButton.setToolTip("Adjust Contrast")
+        self.adjustContrastButton.setGeometry(QtCore.QRect(605, 524, 158, 30))
+        self.adjustContrastButton.setText("Adjust Contrast")
+        self.adjustContrastButton.clicked.connect(self.adjustContrast)
+
+        # Setup adjust saturation button 
+        self.adjustSaturationButton = QtWidgets.QPushButton(self.centralWidget)
+        self.adjustSaturationButton.setToolTip("Adjust Saturation")
+        self.adjustSaturationButton.setGeometry(QtCore.QRect(605, 569, 158, 30))
+        self.adjustSaturationButton.setText("Adjust Saturation")
+        self.adjustSaturationButton.clicked.connect(self.adjustSaturation)
+        
+        # Setup add noise button 
+        self.addNoiseButton = QtWidgets.QPushButton(self.centralWidget)
+        self.addNoiseButton.setToolTip("Add Noise")
+        self.addNoiseButton.setGeometry(QtCore.QRect(605, 614, 158, 30))
+        self.addNoiseButton.setText("Add Noise")
+        self.addNoiseButton.clicked.connect(self.addNoise)
+
+        # Setup detect edges button 
+        self.detectEdgesButton = QtWidgets.QPushButton(self.centralWidget)
+        self.detectEdgesButton.setToolTip("Detect Edges")
+        self.detectEdgesButton.setGeometry(QtCore.QRect(605, 659, 158, 30))
+        self.detectEdgesButton.setText("Detect Edges")
+        self.detectEdgesButton.clicked.connect(self.detectEdges)
         
         self.statusbar = QtWidgets.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
 
-        #crop part
 
-        # self.actionCrop.triggered.connect(self.bastim)
-
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-
-    def browseFiles(self):
+    def saveImage(self):
+        """
+        Saves image.
+        """
+        if self.checkTargetImage():
+            fname = QFileDialog.getSaveFileName(self, "Save file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
+            filters.saveImage(self.targetImage, fname[0])
+        
+    
+    def openFile(self):
+        """
+         Opens an image.
+        """   
         fname = QFileDialog.getOpenFileName(self, "Open file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
+        self.sourceImage = filters.openImage(fname[0])
+        self.targetImage = None
+        self.targetImagePixmap = None
         self.sourceImagePixmap =  QtGui.QPixmap(fname[0])
         self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
         self.sourceImageLabel.setPixmap(self.sourceImagePixmap)
+        self.lastImage = filters.openImage(fname[0])
+        self.cropCoordinates = None
 
-    def checkSourceImage(self):
-        if isinstance(self.source_image, type(None)):
-            self.show_popup('There is no source image')
+        
 
-    def show_popup(self, error_text):
+    def blur(self):
+        """
+         Applies gaussianBlurImage function to an image if source image exists.
+        """   
+        if self.checkLastImage(): # If there is an image to be filtered
+            self.targetImage = filters.gaussianBlurImage(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def deblur(self):
+        """
+         Applies deblurImage function to an image if source image exists.
+        """   
+        if self.checkLastImage(): # If there is an image to be filtered
+            self.targetImage = filters.deblurImage(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def grayscale(self):
+        """
+         Applies grayscale function to an image if source image exists.
+        """   
+        if self.checkLastImage(): # If there is an image to be filtered
+            errorText = "Grayscale: The source image is already grayscale! Please be sure to give a proper colorful image."
+            if not self.checkSameReference(self.lastImage, filters.ConvertToGrayScale(self.lastImage), errorText):
+                self.targetImage = filters.ConvertToGrayScale(self.lastImage)
+                self.lastImage = self.targetImage
+                image = ImageQt.ImageQt(self.targetImage)
+                self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+                self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+                self.targetImageLabel.setPixmap(self.targetImagePixmap)
+                self.cropCoordinates = None
+            
+
+    def crop(self):
+        """
+         Applies CropImage function to an image if source image exists.
+        """    
+        if self.checkLastImage(): # If there is an image to be filtered
+            if not isinstance(self.sourceImage, type(None)):
+                #self.targetImage = filters.CropImage(self.lastImage)
+                self.lastImage = self.targetImage
+                image = ImageQt.ImageQt(self.targetImage)
+                self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+                self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+                self.targetImageLabel.setPixmap(self.targetImagePixmap)
+                self.cropCoordinates = None
+            else:
+                self.show_popup("If you have applied a filter, you should select an area on the right.")
+
+
+    def flip(self):
+        """
+         Applies flip function to an image if source image exists.
+        """   
+        if self.checkLastImage(): # If there is an image to be filtered
+            self.targetImage = filters.flip(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def mirror(self):
+        """
+         Applies MirrorImage function to an image if source image exists.
+        """   
+        if self.checkLastImage(): # If there is an image to be filtered
+            self.targetImage = filters.MirrorImage(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def rotate(self):
+        """
+         Applies rotateImage function to an image if source image exists.
+        """   
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.rotateImage(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def reverseColor(self):
+        """
+         Applies InvertImage function to an image if source image exists.
+        """    
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.InvertImage(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def changeColorBalance(self):
+        """
+         Applies changeColorBalance function to an image if source image exists.
+        """
+        if self.checkLastImage():   # If there is an image to be filtered
+            errorText = "Change Color Balance: The source image is grayscale! Please be sure to give a proper colorful image."
+            if not self.checkSameReference(self.lastImage, filters.changeColorBalance(self.lastImage), errorText):
+                self.targetImage = filters.changeColorBalance(self.lastImage)
+                self.lastImage = self.targetImage
+                image = ImageQt.ImageQt(self.targetImage)
+                self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+                self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+                self.targetImageLabel.setPixmap(self.targetImagePixmap)
+                self.cropCoordinates = None
+
+
+    def adjustBrightness(self): # If there is an image to be filtered
+        """
+         Applies adjustBrightness function to an image if source image exists.
+        """
+        if self.checkLastImage():
+            self.targetImage = filters.AdjustBrightness(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def adjustContrast(self):
+        """
+         Applies adjustContrast function to an image if source image exists.
+        """
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.adjustContrast(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def adjustSaturation(self):
+        """
+         Applies adjustSaturation function to an image if source image exists.
+        """
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.AdjustSaturation(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def addNoise(self):
+        """
+         Applies addNoise function to an image if source image exists.
+        """
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.AddNoise(self.lastImage)
+            self.lastImage = self.targetImage
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def detectEdges(self):
+        """
+         Applies detectEdges function to an image if source image exists.
+        """
+        if self.checkLastImage():   # If there is an image to be filtered
+            self.targetImage = filters.detectEdges(self.lastImage)
+            self.lastImage = self.targetImage 
+            image = ImageQt.ImageQt(self.targetImage)
+            self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.cropCoordinates = None
+
+
+    def checkTargetImage(self):
+        """   Check if the target image to be saved exists or not
+
+        Returns:
+            Boolean: True if the target image exists.
+        """
+        if isinstance(self.targetImage, type(None)):
+            self.show_popup('There is no target image. Please apply a filter to get a target image.')
+            return False
+        return True
+
+
+    def checkLastImage(self):
+        """ Check if the image to be filtered exists or not
+
+        Returns:
+            Boolean: True if the last image exists.
+        """
+        if isinstance(self.lastImage, type(None)):
+            self.show_popup('There is no source image.')
+            return False
+        return True
+
+
+    def checkSameReference(self,object1, object2, errorText):
+        """ Check if two object reference to same address.
+
+        Args:
+            object1 
+            object2 
+            errorText (str): Error message that will be printed on the screen.
+
+        Returns:
+            Boolean: returns True if two object reference to same address.
+        """
+        if object1 is object2:
+            self.show_popup(errorText)
+            return True
+        return False
+
+    def show_popup(self, errorText):
         msg = QMessageBox()
-        msg.setText(error_text)
+        msg.setText(errorText)
+        msg.setWindowTitle("Error")
         msg.setIcon(QMessageBox.Critical)
         msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+
+
+
 
         
 class CroppedImageLabel (QtWidgets.QLabel):
+    """
+    This class creates an QLabel object. Mouse event can be detected using this class.
+    
+    """
+
     def __init__(self, parentQWidget = None):
         super(CroppedImageLabel, self).__init__(parentQWidget)
-        self.initUI()
-
-    def initUI (self):
-        self.setPixmap(QtGui.QPixmap('input.png'))
+        self.cropCoordinates = None
 
     def mousePressEvent (self, eventQMouseEvent):
         self.originQPoint = eventQMouseEvent.pos()
-        self.currentQRubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
-        self.currentQRubberBand.setGeometry(QtCore.QRect(self.originQPoint, QtCore.QSize()))
-        self.currentQRubberBand.show()
+        self.qRubberBand = QtWidgets.QRubberBand(QtWidgets.QRubberBand.Rectangle, self)
+        self.qRubberBand.setGeometry(QtCore.QRect(self.originQPoint, QtCore.QSize()))
+        self.qRubberBand.show()
 
     def mouseMoveEvent (self, eventQMouseEvent):
-        self.currentQRubberBand.setGeometry(QtCore.QRect(self.originQPoint, eventQMouseEvent.pos()).normalized())
+        self.qRubberBand.setGeometry(QtCore.QRect(self.originQPoint, eventQMouseEvent.pos()).normalized())
 
     def mouseReleaseEvent (self, eventQMouseEvent):
-        self.currentQRubberBand.hide()
-        currentQRect = self.currentQRubberBand.geometry()
-        self.currentQRubberBand.deleteLater()
-        print('burdayim:', currentQRect)
+        self.qRubberBand.hide()
+        currentQRect = self.qRubberBand.geometry()
+        self.qRubberBand.deleteLater()
+        self.cropCoordinates = self.setCoordinates(currentQRect.left(), currentQRect.top(), currentQRect.right(), currentQRect.bottom() )
+        # print('burdayim:', currentQRect) # left, top, width, height
+        print(self.cropCoordinates)
+        
+    def setCoordinates(self, left, top, right, bottom):
+        if top < 0:
+            top = 0
+        if left < 0:
+            left = 0
+        if bottom > 620:
+            bottom = 620
+        if right > 550:
+            right = 550
+        
+        return left, top, right, bottom
 
-if __name__ == "__main__":
 
-    app = QApplication(sys.argv)
-    MainWindow = SimpleImageEditor()
-
-    MainWindow.show()
-    sys.exit(app.exec_())

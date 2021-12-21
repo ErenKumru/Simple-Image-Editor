@@ -1,5 +1,11 @@
-# Main project file
-# File structure will be revised later to be convenient
+from PyQt5.QtWidgets import QApplication
 
-# Run first verify the project is working properly!
-print("\n Hello world!\n I am working properly, thanks for checking!")
+from gui import SimpleImageEditor
+
+import sys
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    MainWindow = SimpleImageEditor()
+    MainWindow.show()
+    sys.exit(app.exec_())
