@@ -22,7 +22,7 @@ def saveImage(image, path):
         path (str): path of the image
     """
     
-    cv2.imwrite(path, image)
+    image.save(path + ".jpg")
 
 
 def NumberOfChannels(sourceImage):
