@@ -171,9 +171,10 @@ class SimpleImageEditor(QMainWindow):
         """
         Saves image.
         """
-        if self.checkTargetImage():
-            fname = QFileDialog.getSaveFileName(self, "Save file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
-            filters.saveImage(self.targetImage, fname[0])
+        if self.checkSourceImage():
+            if self.checkSourceImage():
+                fname = QFileDialog.getSaveFileName(self, "Save file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
+                filters.saveImage(self.targetImage, fname[0])
         
     
     def openFile(self):
@@ -201,7 +202,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies gaussianBlurImage function to an image if source image exists.
         """   
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             self.targetImage = filters.gaussianBlurImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -210,7 +211,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies deblurImage function to an image if source image exists.
         """   
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             self.targetImage = filters.deblurImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -219,7 +220,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies grayscale function to an image if source image exists.
         """   
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             errorText = "Grayscale: The source image is already grayscale! Please be sure to give a proper colorful image."
             if not self.checkSameReference(self.targetImage, filters.ConvertToGrayScale(self.targetImage), errorText):
                 self.targetImage = filters.ConvertToGrayScale(self.targetImage)
@@ -230,7 +231,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies CropImage function to an image if source image exists.
         """    
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             if not isinstance(self.sourceImage, type(None)):
                 if not isinstance(self.targetImageLabel.cropCoordinates, type(None)):
                     # When crop function is applied scaling factor of image must be taken into account.
@@ -253,7 +254,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies flip function to an image if source image exists.
         """   
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             self.targetImage = filters.flip(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -262,7 +263,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies MirrorImage function to an image if source image exists.
         """   
-        if self.checkTargetImage(): # If there is an image to be filtered
+        if self.checkSourceImage(): # If there is an image to be filtered
             self.targetImage = filters.MirrorImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -271,7 +272,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies rotateImage function to an image if source image exists.
         """   
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.rotateImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -280,7 +281,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies InvertImage function to an image if source image exists.
         """    
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.InvertImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -289,7 +290,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies changeColorBalance function to an image if source image exists.
         """
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             errorText = "Change Color Balance: The source image is grayscale! Please be sure to give a proper colorful image."
             if not self.checkSameReference(self.targetImage, filters.changeColorBalance(self.targetImage), errorText):
                 self.targetImage = filters.changeColorBalance(self.targetImage)
@@ -300,7 +301,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies adjustBrightness function to an image if source image exists.
         """
-        if self.checkTargetImage():
+        if self.checkSourceImage():
             self.targetImage = filters.AdjustBrightness(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -309,7 +310,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies adjustContrast function to an image if source image exists.
         """
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.adjustContrast(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -318,7 +319,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies adjustSaturation function to an image if source image exists.
         """
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.AdjustSaturation(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -327,7 +328,7 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies addNoise function to an image if source image exists.
         """
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.AddNoise(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -336,19 +337,19 @@ class SimpleImageEditor(QMainWindow):
         """
          Applies detectEdges function to an image if source image exists.
         """
-        if self.checkTargetImage():   # If there is an image to be filtered
+        if self.checkSourceImage():   # If there is an image to be filtered
             self.targetImage = filters.detectEdges(self.targetImage)
             self.setupTargetImageLabel()
 
 
-    def checkTargetImage(self):
-        """Check if the target image to be saved exists or not
+    def checkSourceImage(self):
+        """Check if the source image to be saved exists or not
 
         Returns:
-            Boolean: True if the target image exists.
+            Boolean: True if the source image exists.
         """
         if isinstance(self.targetImage, type(None)):
-            self.show_popup('There is no target image. Please apply a filter to get a target image.')
+            self.show_popup('There is no source image. Please open a file.')
             return False
         return True
 
@@ -380,7 +381,7 @@ class SimpleImageEditor(QMainWindow):
             self.show_popup(errorText)
             return True
         return False
-
+    
 
     def show_popup(self, errorText):
         msg = QMessageBox()
