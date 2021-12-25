@@ -1,6 +1,4 @@
 import cv2
-
-from scipy import ndimage
 import numpy as np
 from PIL import ImageEnhance, Image, ImageFilter 
 from scipy.stats.mstats import mquantiles
@@ -42,24 +40,22 @@ def flip(image):
     """Flip the image around the x axis.
 
     Args:
-        image (numpy.ndarray)
+        image (PIL.Image)
 
     Returns:
-        numpy.ndarray: Flipped image
+        PIL.Image: Flipped image
     """
-    # Flip the image using cv2.flip() method with parameters image and 0 to flip vertically
-
     return image.transpose(Image.FLIP_TOP_BOTTOM)
 
 
 def gaussianBlurImage(image):
-    """Blur the image with gaussian blur.
+    """Blur the image with gaussian blur with radius 1.
 
     Args:
-        image (numpy.ndarray)
+        image (PIL.Image)
 
     Returns:
-        numpy.ndarray: Blurred image
+        (PIL.Image): Blurred image
     """
     return image.filter(ImageFilter.GaussianBlur(radius = 1))
 
@@ -67,10 +63,10 @@ def deblurImage(image):
     """Deblur image using laplacian filter.
 
     Args:
-        image (numpy.ndarray)
+        image (PIL.Image)
 
     Returns:
-        numpy.ndarray: Deblurred image
+        PIL.Image: Deblurred image
     """
 
     return image.filter(ImageFilter.Kernel((3,3), (0, -1, 0, -1, 5, -1, 0, -1, 0)))
@@ -80,26 +76,25 @@ def rotateImage(image):
     """Rotate image by angle
 
     Args:
-        image (numpy.ndarray)
-        angle (float): rotation angle in degree
+        image (PIL.Image)
 
     Returns:
-        (numpy.ndarray): Rotated image
+        PIL.Image: Rotated image
     """
 
-    return image.rotate(90)
+    return image.rotate(90, expand=True)
 
 
 def changeColorBalance(image, saturationLevel=0.5):
-    """The color cast can be removed from an image 
-    by scaling the histograms of each of the R, G, and B channels 
-    so that they span the complete 0-255 scale. 
+    """The color cast can be removed from an image
+    by scaling the histograms of each of the R, G, and B channels
+    so that they span the complete 0-255 scale.
     Resource: https://web.stanford.edu/~sujason/ColorBalancing/simplestcb.html
     Args:
-        image (numpy.ndarray)
+        image (PIL.Image)
 
     Returns:
-        numpy.ndarray: color balanced image
+        PIL.Image: color balanced image
     """
     if IsGrayScale(image):
         return image
@@ -107,6 +102,7 @@ def changeColorBalance(image, saturationLevel=0.5):
     image = np.asarray(image)
     # 1. Determine the histogram for each RGB channel 
     # find the quantiles that correspond to our desired saturation level.
+
     # saturationLevel controls the saturation of a certain percentage of the pixels to black and white.
     q = np.array([saturationLevel/2.0, 1 - saturationLevel/2.0]) 
 
@@ -128,16 +124,19 @@ def changeColorBalance(image, saturationLevel=0.5):
     return Image.fromarray(output_image.astype(np.uint8))
 
 def adjustContrast(image, factor=0.5):
-    """Adjust image contrast. 
-    An enhancement factor of 0.0 gives a solid grey image. 
+    """Adjust image contrast.
+    An enhancement factor of 0.0 gives a solid grey image.
     A factor of 1.0 gives the original image.
 
     Args:
-        image ([type]): [description]
-        factor (float): Image contrast will change with a factor. 
+        image (PIL.Image): 
+        factor (float): Image contrast will change with a factor.
         If factor is equal to 1, it gives original image.
         If factor is less than 1, image's constrast will be decreased.
         If factor is greater than 1, image's contrast will be increased.
+
+    Returns:
+        PIL.Image
     """
     enhancer = ImageEnhance.Contrast(image)
     image = enhancer.enhance(factor)
@@ -153,10 +152,10 @@ def detectEdges(image, threshold1=120, threshold2=150, L2gradient = False):
         5. Hystresis Thresholding
 
     Args:
-        image (numpy.ndarray)
+        image (PIL.Image)
 
     Returns:
-        numpy.ndarray: Blurred image
+        PIL.Image: Blurred image
     """
     
     #L2gradient specifies the equation for finding gradient magnitude. Edge_Gradient(G)=|Gx|+|Gy|
