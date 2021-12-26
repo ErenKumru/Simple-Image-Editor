@@ -174,7 +174,8 @@ class SimpleImageEditor(QMainWindow):
         if self.checkSourceImage():
             if self.checkSourceImage():
                 fname = QFileDialog.getSaveFileName(self, "Save file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
-                filters.saveImage(self.targetImage, fname[0])
+                if fname != ('', ''):
+                    filters.saveImage(self.targetImage, fname[0])
         
     
     def openFile(self):
@@ -183,19 +184,20 @@ class SimpleImageEditor(QMainWindow):
         """   
         # setup source image
         fname = QFileDialog.getOpenFileName(self, "Open file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
-        self.sourceImage = filters.openImage(fname[0])
-        self.sourceImagePixmap =  QtGui.QPixmap(fname[0])
-        self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
-        self.sourceImageLabel.setGeometry(self.sourceImageLabel.x() , self.sourceImageLabel.y(), self.sourceImagePixmap.width(),self.sourceImagePixmap.height())
-        self.sourceImageLabel.setPixmap(self.sourceImagePixmap)
+        if fname != ('', ''):
+            self.sourceImage = filters.openImage(fname[0])
+            self.sourceImagePixmap =  QtGui.QPixmap(fname[0])
+            self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.sourceImageLabel.setGeometry(self.sourceImageLabel.x() , self.sourceImageLabel.y(), self.sourceImagePixmap.width(),self.sourceImagePixmap.height())
+            self.sourceImageLabel.setPixmap(self.sourceImagePixmap)
 
-        # setup target image
-        self.targetImage = filters.openImage(fname[0])
-        self.targetImagePixmap = QtGui.QPixmap(fname[0])
-        self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
-        self.targetImageLabel.setGeometry(self.targetImageLabel.x() , self.targetImageLabel.y(), self.targetImagePixmap.width(),self.targetImagePixmap.height())
-        self.targetImageLabel.setPixmap(self.targetImagePixmap)
-        self.targetImageLabel.cropCoordinates = None  
+            # setup target image
+            self.targetImage = filters.openImage(fname[0])
+            self.targetImagePixmap = QtGui.QPixmap(fname[0])
+            self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+            self.targetImageLabel.setGeometry(self.targetImageLabel.x() , self.targetImageLabel.y(), self.targetImagePixmap.width(),self.targetImagePixmap.height())
+            self.targetImageLabel.setPixmap(self.targetImagePixmap)
+            self.targetImageLabel.cropCoordinates = None  
 
 
     def blur(self):
