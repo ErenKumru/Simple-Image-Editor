@@ -10,7 +10,8 @@ class SimpleImageEditor(QMainWindow):
         super().__init__()
         self.sourceImage = None # There is no source image initially
         self.targetImage = None # There is no target image initially
-        self.lastImage = None # There is no target image initially
+        self.lastTargetImage = None # There is no last target image initially
+        self.lastSourceImage = None # There is no last source image initially
         self.setGeometry(0, 0, 1366, 768) #xpos, ypos, width, height
         self.centerWindow()
         self.setWindowTitle('Simple Image Editor') # Name the title of window
@@ -225,13 +226,22 @@ class SimpleImageEditor(QMainWindow):
         """
         Undo applied filter
         """
-        self.targetImage = self.lastImage
-        image = ImageQt.ImageQt(self.targetImage)
-        self.targetImagePixmap =  QtGui.QPixmap.fromImage(image)
-        self.targetImagePixmap = self.targetImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
-        self.targetImageLabel.setPixmap(self.targetImagePixmap)
-        self.targetImageLabel.cropCoordinates = None 
-        self.targetImageLabel.setGeometry(self.targetImageLabel.x(), self.targetImageLabel.y(), self.targetImagePixmap.width(),self.targetImagePixmap.height())
+        # Check if there is an image to undo.
+        if isinstance(self.targetImage, type(None)) and isinstance(self.sourceImage, type(None)):
+            self.show_popup('There is nothing to undo.')
+            return
+
+        # undo images.
+        self.targetImage = self.lastTargetImage
+        self.sourceImage = self.lastSourceImage
+        
+        if not isinstance(self.targetImage, type(None)):
+            self.setupTargetImageLabel()
+            if not isinstance(self.sourceImage, type(None)):
+                self.setupSourceImageLabel()
+        else: # Clear labels if source and target images have been restored.
+            self.targetImageLabel.clear()
+            self.sourceImageLabel.clear()
 
 
     def openFile(self):
@@ -241,6 +251,10 @@ class SimpleImageEditor(QMainWindow):
         # setup source image
         fname = QFileDialog.getOpenFileName(self, "Open file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
         if fname != ('', ''):
+            
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
+
             self.sourceImage = filters.openImage(fname[0])
             self.sourceImagePixmap =  QtGui.QPixmap(fname[0])
             self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
@@ -255,8 +269,6 @@ class SimpleImageEditor(QMainWindow):
             self.targetImageLabel.setPixmap(self.targetImagePixmap)
             self.targetImageLabel.cropCoordinates = None  
 
-            #setup last image
-            self.lastImage = filters.openImage(fname[0])
 
 
     def blur(self):
@@ -264,7 +276,7 @@ class SimpleImageEditor(QMainWindow):
          Applies gaussianBlurImage function to an image if source image exists.
         """   
         if self.checkSourceImage(): # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
             self.targetImage = filters.gaussianBlurImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -274,7 +286,7 @@ class SimpleImageEditor(QMainWindow):
          Applies deblurImage function to an image if source image exists.
         """   
         if self.checkSourceImage(): # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
             self.targetImage = filters.deblurImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -286,7 +298,7 @@ class SimpleImageEditor(QMainWindow):
         if self.checkSourceImage(): # If there is an image to be filtered
             errorText = "Grayscale: The source image is already grayscale! Please be sure to give a proper colorful image."
             if not self.checkSameReference(self.targetImage, filters.ConvertToGrayScale(self.targetImage), errorText):
-                self.lastImage = self.targetImage # save last image
+                self.lastTargetImage = self.targetImage # save last target image
                 self.targetImage = filters.ConvertToGrayScale(self.targetImage)
                 self.setupTargetImageLabel()
             
@@ -298,7 +310,7 @@ class SimpleImageEditor(QMainWindow):
         if self.checkSourceImage(): # If there is an image to be filtered
             if not isinstance(self.sourceImage, type(None)):
                 if not isinstance(self.targetImageLabel.cropCoordinates, type(None)):
-                    self.lastImage = self.targetImage # save last image
+                    self.lastTargetImage = self.targetImage # save last target image
                     # When crop function is applied scaling factor of image must be taken into account.
                     factor_x = self.targetImage.size[0] / self.targetImageLabel.width() #scaling factor in x axis
                     factor_y = self.targetImage.size[1] / self.targetImageLabel.height() #scaling factor in y axis
@@ -320,7 +332,7 @@ class SimpleImageEditor(QMainWindow):
          Applies flip function to an image if source image exists.
         """   
         if self.checkSourceImage(): # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
             self.targetImage = filters.flip(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -330,7 +342,7 @@ class SimpleImageEditor(QMainWindow):
          Applies MirrorImage function to an image if source image exists.
         """   
         if self.checkSourceImage(): # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
             self.targetImage = filters.MirrorImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -340,7 +352,7 @@ class SimpleImageEditor(QMainWindow):
          Applies rotateImage function to an image if source image exists.
         """   
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
             self.targetImage = filters.rotateImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -350,7 +362,8 @@ class SimpleImageEditor(QMainWindow):
          Applies InvertImage function to an image if source image exists.
         """    
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.InvertImage(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -362,7 +375,8 @@ class SimpleImageEditor(QMainWindow):
         if self.checkSourceImage():   # If there is an image to be filtered
             errorText = "Change Color Balance: The source image is grayscale! Please be sure to give a proper colorful image."
             if not self.checkSameReference(self.targetImage, filters.changeColorBalance(self.targetImage), errorText):
-                self.lastImage = self.targetImage # save last image
+                self.lastTargetImage = self.targetImage # save last target image
+                self.lastSourceImage = self.sourceImage # save last source image
                 self.targetImage = filters.changeColorBalance(self.targetImage)
                 self.setupTargetImageLabel()
 
@@ -373,7 +387,8 @@ class SimpleImageEditor(QMainWindow):
          It increases brightness.
         """
         if self.checkSourceImage():
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.AdjustBrightness(self.targetImage, 1.5)
             self.setupTargetImageLabel()
 
@@ -383,7 +398,8 @@ class SimpleImageEditor(QMainWindow):
          It decreases brightness.
         """
         if self.checkSourceImage():
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.AdjustBrightness(self.targetImage, 0.75)
             self.setupTargetImageLabel()
 
@@ -393,7 +409,8 @@ class SimpleImageEditor(QMainWindow):
          It increases contrast.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.adjustContrast(self.targetImage, 1.5)
             self.setupTargetImageLabel()
 
@@ -403,7 +420,8 @@ class SimpleImageEditor(QMainWindow):
          It decreases contrast.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.adjustContrast(self.targetImage, 0.75)
             self.setupTargetImageLabel()
 
@@ -413,7 +431,8 @@ class SimpleImageEditor(QMainWindow):
          It increases saturation.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.AdjustSaturation(self.targetImage, 1.5)
             self.setupTargetImageLabel()
 
@@ -423,7 +442,8 @@ class SimpleImageEditor(QMainWindow):
          It decreases saturation.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.AdjustSaturation(self.targetImage, 0.75)
             self.setupTargetImageLabel()
 
@@ -432,7 +452,8 @@ class SimpleImageEditor(QMainWindow):
          Applies addNoise function to an image if source image exists.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.AddNoise(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -442,7 +463,8 @@ class SimpleImageEditor(QMainWindow):
          Applies detectEdges function to an image if source image exists.
         """
         if self.checkSourceImage():   # If there is an image to be filtered
-            self.lastImage = self.targetImage # save last image
+            self.lastTargetImage = self.targetImage # save last target image
+            self.lastSourceImage = self.sourceImage # save last source image
             self.targetImage = filters.detectEdges(self.targetImage)
             self.setupTargetImageLabel()
 
@@ -469,6 +491,18 @@ class SimpleImageEditor(QMainWindow):
         self.targetImageLabel.setPixmap(self.targetImagePixmap)
         self.targetImageLabel.cropCoordinates = None 
         self.targetImageLabel.setGeometry(self.targetImageLabel.x(), self.targetImageLabel.y(), self.targetImagePixmap.width(),self.targetImagePixmap.height())
+
+
+    def setupSourceImageLabel(self):
+        """
+        This function is called when a filter is applied to an image.
+        """
+        image = ImageQt.ImageQt(self.sourceImage)
+        self.sourceImagePixmap =  QtGui.QPixmap.fromImage(image)
+        self.sourceImagePixmap = self.sourceImagePixmap.scaled(550, 620, QtCore.Qt.KeepAspectRatio)
+        self.sourceImageLabel.setPixmap(self.sourceImagePixmap)
+        self.sourceImageLabel.cropCoordinates = None 
+        self.sourceImageLabel.setGeometry(self.sourceImageLabel.x(), self.sourceImageLabel.y(), self.sourceImagePixmap.width(),self.sourceImagePixmap.height())
 
 
     def checkSameReference(self,object1, object2, errorText):
