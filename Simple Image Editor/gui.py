@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QPushButton
+from PyQt5.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 import os
 import filters
 from PIL import ImageQt
@@ -524,12 +524,3 @@ class CroppedImageLabel (QtWidgets.QLabel):
         currentQRect = self.qRubberBand.geometry()
         self.qRubberBand.deleteLater()
         self.cropCoordinates =(currentQRect.left(), currentQRect.top(), currentQRect.right(), currentQRect.bottom() )
-
-
-import sys
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    MainWindow = SimpleImageEditor()
-    MainWindow.show()
-    sys.exit(app.exec_())
