@@ -251,9 +251,6 @@ class SimpleImageEditor(QMainWindow):
         # setup source image
         fname = QFileDialog.getOpenFileName(self, "Open file", os.getcwd(), 'Images (*.png *.xmp *.jpg *.jpeg *.tiff *.gif)')
         if fname != ('', ''):
-            
-            self.lastTargetImage = self.targetImage # save last target image
-            self.lastSourceImage = self.sourceImage # save last source image
 
             self.sourceImage = filters.openImage(fname[0])
             self.sourceImagePixmap =  QtGui.QPixmap(fname[0])
@@ -268,8 +265,7 @@ class SimpleImageEditor(QMainWindow):
             self.targetImageLabel.setGeometry(self.targetImageLabel.x() , self.targetImageLabel.y(), self.targetImagePixmap.width(),self.targetImagePixmap.height())
             self.targetImageLabel.setPixmap(self.targetImagePixmap)
             self.targetImageLabel.cropCoordinates = None  
-
-
+            
 
     def blur(self):
         """
