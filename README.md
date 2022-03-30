@@ -4,11 +4,11 @@ Hacettepe University - BBM415 Fundementals of Image Processing course term proje
 Developed by [Eren Kumru](https://github.com/ErenKumru) & [Tuğçe Kızıltepe](https://github.com/tugcekiziltepe)
 
 ## About
-Simple Image Editor is a very fast and simple to use image processing and enhancement program developed for personal usage.
+Simple Image Editor is a very fast and simple to use image processing and enhancement program that can work with both colored and greyscale images developed for personal usage.
 
 ## Example Results and Usage
 ![Example 1](https://user-images.githubusercontent.com/44412775/160859586-52b725ff-91ae-4933-98ba-704c858f01dd.png)
-
+_________________________________________________________________________________________________________________________________________________________
 
 ![Example 2](https://user-images.githubusercontent.com/44412775/160859599-bddbb804-371d-4583-82f6-892d5c2d96af.png)
 
