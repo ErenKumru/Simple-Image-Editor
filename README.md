@@ -6,6 +6,11 @@ Developed by [Eren Kumru](https://github.com/ErenKumru) & [Tuğçe Kızıltepe](
 ## About
 Simple Image Editor is an accurate, safe, fast & simple to use image processing and enhancement program that can work with both colored and greyscale images developed for personal usage.
 
+## Detailed Information and Report
+PDF Format - [Image Processing - Project Report.pdf](https://github.com/ErenKumru/Simple-Image-Editor/files/8381496/Image.Processing.-.Project.Report.pdf)
+
+Word Format - [Image Processing - Project Report.docx](https://github.com/ErenKumru/Simple-Image-Editor/files/8381497/Image.Processing.-.Project.Report.docx)
+
 ## Example Results and Usage
 ### Colored Image to Greyscale Image
 ![Example 1](https://user-images.githubusercontent.com/44412775/160859586-52b725ff-91ae-4933-98ba-704c858f01dd.png)
