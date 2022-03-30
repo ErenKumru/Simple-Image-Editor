@@ -18,6 +18,9 @@ Word Format - [Image Processing - Project Report.docx](https://github.com/ErenKu
 ### Greyscale Image Enhancement & Crop
 ![Example 2](https://user-images.githubusercontent.com/44412775/160859599-bddbb804-371d-4583-82f6-892d5c2d96af.png)
 
+### Edge Detection Example
+![Edge Detection](https://user-images.githubusercontent.com/44412775/160862921-2c867f82-92d8-4b47-9bac-2900069544ec.png)
+
 ### Colored Image Enhancement and Color Reversing
 ![Example 4](https://user-images.githubusercontent.com/44412775/160859612-6a923e51-4406-4c13-b686-4dfdfe2e6491.png)
 
